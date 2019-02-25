@@ -5,7 +5,7 @@ import java.util.Comparator;
 public class TradeObject{
 
     //Variables
-    float id;           //trade id
+    float orderId;           //trade id
     float quantity;     //number of sharse to buy
     double price;       //price to buy at (Limit order)
     double asset;        //Coin or stock to buy
@@ -17,7 +17,7 @@ public class TradeObject{
     int timeInForce;    //0:GTC(Good Til Cancel),1:(IOC)Immediate Fill or Cancel,2:(FOK)Fill or Kill,3:(GTD)Good for Day
 
     //Contructor Needs all variables at start no default constructor
-    public TradeObject(float id,
+    public TradeObject(float orderId,
                        float quantity,
                        double price,
                        double asset,
@@ -28,7 +28,7 @@ public class TradeObject{
                        int orderType,
                        int timeInForce)
     {
-        this.id = id;
+        this.orderId = orderId;
         this.quantity = quantity;
         this.price = price;
         this.asset = asset;
@@ -40,37 +40,124 @@ public class TradeObject{
         this.timeInForce = timeInForce;
     }
 
-    /*
-    Getter and setter methods
+    /**+
+     * Getter for getting the Order id
+     * @return
      */
-    public float getId(){return this.id; }
-    public void setId(float id){this.id = id;}
+    public float getOrderId(){return this.orderId; }
 
+    /**+
+     * Setter for the Order ID
+     * @param orderId
+     */
+    public void setOrderId(float orderId){this.orderId = orderId;}
+
+    /**+
+     * Getter for Quantity
+     * @return
+     */
     public float getQuantity(){return this.quantity;}
+
+    /**+
+     * Setter for Quantity
+     * @param quantity
+     */
     public void setQuantity(float quantity){this.quantity = quantity;}
 
+    /**+
+     * Getter for price
+     * @return
+     */
     public double getPrice(){return this.price;}
+
+    /**+
+     * Setter for price
+     * @param price
+     */
     public void setPrice(double price) {this.price = price; }
 
+    /**+
+     * Getter for asset
+     * @return
+     */
     public double getasset(){return this.asset;}
+
+    /**+
+     * Setter for asset
+     * @param asset
+     */
     public void setasset(float asset) {this.asset = asset;}
 
+    /**+
+     * Getter for base
+     * @param base
+     */
     public void setBase(float base) {this.base = base;}
+
+    /**+
+     * Setter for base
+     * @return
+     */
     public double getBase() { return this.base;}
 
+    /**+
+     * Getter for usderID
+     * @return
+     */
     public float getUserId(){return this.userID; }
+
+    /**+
+     * Setter for User ID
+     * @param userId
+     */
     public void setUserId(float userId){this.userID = userId;}
 
+    /**+
+     * Getter for ExchangeID
+     * @return
+     */
     public int getExcahngeID(){return this.excahngeID;}
+
+    /**+
+     * Setter for exchenge ID
+     * @param excahngeID
+     */
     public void setExcahngeID(int excahngeID){this.excahngeID = excahngeID;}
 
+    /**+
+     * Getter for the Side of the order
+     * @return
+     */
     public int getSide() { return this.side; }
+
+    /**+
+     * Setter for the Side
+     * @param side
+     */
     public void setSide(int side) {this.side = side;}
 
+    /**+
+     * Getter for ordertype
+     * @return
+     */
     public int getOrderType(){return this.orderType;}
+
+    /**+
+     * Setter for ordertype
+     * @param orderType
+     */
     public void setOrderType(int orderType){this.orderType = orderType;}
 
+    /**+
+     * Getter for Time in force
+     * @return
+     */
     public int getTimeInForce(){return this.timeInForce;}
+
+    /**+
+     * Setter for time in force
+     * @param timeInForce
+     */
     public void setTimeInForce(int timeInForce){this.timeInForce = timeInForce;}
 
 
