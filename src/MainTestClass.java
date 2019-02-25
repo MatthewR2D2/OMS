@@ -3,8 +3,8 @@
 *This is the main tester class for the macthing engine
  */
 import HelperClasses.PrettyPrinterUtil;
+import TradePackages.TradeObject;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +18,7 @@ public class MainTestClass {
         //Sample trade objects
         TradeObject buy = new TradeObject(
                 1,
-                1000000,
+                30000,
                 0,
                 1.02,
                 2.01,
@@ -53,7 +53,7 @@ public class MainTestClass {
         TradeObject ob3 = new TradeObject(
                 3,
                 200,
-                100.01,
+                2.95,
                 1.2,
                 0.01,
                 1234,
@@ -78,7 +78,7 @@ public class MainTestClass {
         TradeObject sell = new TradeObject(
                 9,
                 1000000,
-                0,
+                0.95,
                 1.02,
                 2.01,
                 1234,
@@ -121,17 +121,7 @@ public class MainTestClass {
                 0,
                 0);
 
-        TradeObject b4 = new TradeObject(
-                3,
-                200,
-                0.95,
-                1.2,
-                0.01,
-                1234,
-                2,
-                0,
-                0,
-                0);
+
 
 
         List<TradeObject> sellOrderBook = new ArrayList<>();
@@ -141,14 +131,17 @@ public class MainTestClass {
         sellOrderBook.add(ob4);
 
         List<TradeObject> buyOrderBook = new ArrayList<>();
-        sellOrderBook.add(b1);
-        sellOrderBook.add(b2);
-        sellOrderBook.add(b3);
-        sellOrderBook.add(b4);
+        buyOrderBook.add(b1);
+        buyOrderBook.add(b2);
+        buyOrderBook.add(b3);
+
+
+
 
 
         MatchingEngine me = new MatchingEngine();
-        String result = me.orderMatch(buy, buyOrderBook, sellOrderBook);
+        //String result = me.orderMatch(buy, buyOrderBook, sellOrderBook);
+        String result = me.orderMatch(sell, buyOrderBook, sellOrderBook);
         ppu.print(result);
 
 

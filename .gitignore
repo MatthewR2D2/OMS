@@ -10,3 +10,7 @@ OMS.iml
 out/production/OMS/HelperClasses/PrettyPrinterUtil\.class
 
 *.class
+
+\.idea/uiDesigner\.xml
+
+*.kotlin_module

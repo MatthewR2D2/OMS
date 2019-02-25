@@ -1,4 +1,8 @@
-public class TradeObject {
+package TradePackages;
+
+import java.util.Comparator;
+
+public class TradeObject{
 
     //Variables
     float id;           //trade id
@@ -68,5 +72,8 @@ public class TradeObject {
 
     public int getTimeInForce(){return this.timeInForce;}
     public void setTimeInForce(int timeInForce){this.timeInForce = timeInForce;}
+
+
+
 } // End of class
 
