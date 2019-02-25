@@ -1,6 +1,5 @@
-import com.sun.deploy.util.ArrayUtil;
 
-import java.lang.reflect.Array;
+
 import java.util.List;
 
 public class MatchingEngine {
@@ -8,7 +7,7 @@ public class MatchingEngine {
     // Constructor Needs no optiion
     public MatchingEngine(){}
 
-    public String orderMatch(TradeObject to, List<TradeObject> orderBook)
+    public String orderMatch(TradeObject to, List<TradeObject> buyBook, List<TradeObject> sellBook )
     {
         String result = "";
         //Check what type of order it is
@@ -33,8 +32,8 @@ public class MatchingEngine {
                 //Check to see what side the order is one
                 //0 = buy
                 //1 = Sell
-                if(to.side == 0){ buyOrderMatching(to, orderBook);}
-                else { sellOrderMatching(to, orderBook); }
+                if(to.side == 0){ buyOrderMatching(to, buyBook, sellBook);}
+                else { sellOrderMatching(to, buyBook, sellBook); }
 
             }else{result = "New Order but not valid and rejected";}
         }
@@ -62,12 +61,31 @@ public class MatchingEngine {
         return valid;
     }
 
-    private void sellOrderMatching(TradeObject to, List<TradeObject> orderBook)
+    private void sellOrderMatching(TradeObject to, List<TradeObject> buyBook, List<TradeObject> sellBook)
     {
-        System.out.println("Sell Order");
+        System.out.println("Buy Order");
+        //Check to see if there is a limit price or not
+        //If 0 then its a market order
+        if(to.price > 0.00)
+        {
+            //Limit Order
+
+        }else
+        {
+            // Market order
+            //Loop through sell side orderbook
+            //Assuming that it is sorted by price
+            // First price should be best price
+            System.out.println(buyBook.size());
+            fillSellMarketOrder(to, buyBook, sellBook); //Start out at 0 or the first and lowest price best price
+            if (to.quantity == 0)
+            {
+                System.out.println("Order Fully filled");
+            }
+        }
     }
 
-    private void buyOrderMatching(TradeObject to, List<TradeObject> orderBook)
+    private void buyOrderMatching(TradeObject to, List<TradeObject> buyBook, List<TradeObject> sellBook)
     {
         System.out.println("Buy Order");
         //Check to see if there is a limit price or not
@@ -82,8 +100,8 @@ public class MatchingEngine {
             //Loop through sell side orderbook
             //Assuming that it is sorted by price
             // First price should be best/lowest price
-            System.out.println(orderBook.size());
-            fillMarketOrder(to, orderBook, 0); //Start out at 0 or the first and lowest price best price
+            System.out.println(sellBook.size());
+            fillBuyMarketOrder(to, buyBook, sellBook); //Start out at 0 or the first and lowest price best price
             if (to.quantity == 0)
             {
                 System.out.println("Order Fully filled");
@@ -93,40 +111,79 @@ public class MatchingEngine {
     }
 
     // These will fill solong as there is a opposite order
-    private void fillMarketOrder(TradeObject to, List<TradeObject> orderBook, int index)
+    private void fillBuyMarketOrder(TradeObject to, List<TradeObject> buyBook, List<TradeObject> sellBook)
     {
         System.out.println("Starting to Fill order");
-        System.out.println("Index:" + index + "Size:" + orderBook.size());
-        if(to.quantity > orderBook.get(index).quantity)
+        System.out.println("Index:" + 0 + "Size:" + sellBook.size());
+        if(to.quantity > sellBook.get(0).quantity)
         {
             //Partial Fill set the new quantitiy for the order
             //TODO: Make a fill method to actaully fill the order
-            to.setQuantity(to.quantity - orderBook.get(index).quantity);
+            to.setQuantity(to.quantity - sellBook.get(0).quantity);
             //Remove Orderbook from array
-            orderBook.remove(index);
+            sellBook.remove(0);
             //Get the next order
-            if(to.quantity > 0 && !orderBook.isEmpty())
+            if(to.quantity > 0 && !sellBook.isEmpty())
             {
-                fillMarketOrder(to, orderBook, index); //Recursive call back to start
+                fillBuyMarketOrder(to, buyBook, sellBook); //Recursive call back to start
             }else
                 {
                     //Add the unfill order to the order book.
                     System.out.println("Order is not filled ans will be sent to the order book");
-                    orderBook.add(to);
+                    buyBook.add(to);
                 }
 
-        }else if(to.quantity == orderBook.get(index).quantity)
+        }else if(to.quantity == sellBook.get(0).quantity)
         {
             //Fill the order
             //TODO: Make a fill method to actaully fill the order
             to.setQuantity(0);
             //remove order from order book
-            orderBook.remove(index);
+            sellBook.remove(0);
         }else  //Orderbook has more quantity than the order
         {
-            //TODO: Make a fill method to actaully fill the order
+            //TODO: Make a fill method to actually fill the order
             //remove volume from the orderbook
-            orderBook.get(index).setQuantity(orderBook.get(index).quantity - to.quantity);
+            sellBook.get(0).setQuantity(sellBook.get(0).quantity - to.quantity);
+            to.setQuantity(0);
+        }
+    }
+
+    // These will fill solong as there is a opposite order
+    private void fillSellMarketOrder(TradeObject to, List<TradeObject> buyBook, List<TradeObject> sellBook)
+    {
+        System.out.println("Starting to Fill order");
+        System.out.println("Index:" + 0 + "Size:" + buyBook.size());
+        if(to.quantity > buyBook.get(0).quantity)
+        {
+            //Partial Fill set the new quantitiy for the order
+            //TODO: Make a fill method to actaully fill the order
+            to.setQuantity(to.quantity - buyBook.get(0).quantity);
+            //Remove Orderbook from array
+            buyBook.remove(0);
+            //Get the next order
+            if(to.quantity > 0 && !buyBook.isEmpty())
+            {
+                fillSellMarketOrder(to, buyBook, sellBook); //Recursive call back to start
+            }else
+            {
+                //Add the unfill order to the order book.
+                System.out.println("Order is not filled ans will be sent to the order book");
+                sellBook.add(to);
+            }
+
+        }else if(to.quantity == buyBook.get(0).quantity)
+        {
+            //Fill the order
+            //TODO: Make a fill method to actaully fill the order
+            to.setQuantity(0);
+            //remove order from order book
+            buyBook.remove(0);
+        }else  //Orderbook has more quantity than the order
+        {
+            //TODO: Make a fill method to actually fill the order
+            //remove volume from the orderbook
+            buyBook.get(0).setQuantity(buyBook.get(0).quantity - to.quantity);
             to.setQuantity(0);
         }
     }
