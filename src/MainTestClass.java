@@ -8,6 +8,9 @@ import TradePackages.TradeObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**+
+ * Main Method
+ */
 public class MainTestClass {
 
     public static void main(String[] args) {
@@ -17,14 +20,26 @@ public class MainTestClass {
 
         //Sample trade objects
         TradeObject buy = new TradeObject(
-                1,
-                30000,
-                0,
+                6,
+                500,
+                1.50,
                 1.02,
                 2.01,
                 1234,
                 2,
                 0,
+                0,
+                0);
+
+        TradeObject ob4 = new TradeObject(
+                5,
+                200,
+                0.95,
+                1.2,
+                0.01,
+                1234,
+                2,
+                1,
                 0,
                 0);
 
@@ -40,7 +55,7 @@ public class MainTestClass {
                 0,
                 0);
         TradeObject ob2 = new TradeObject(
-                2,
+                4,
                 200,
                 1.31,
                 1.2,
@@ -62,23 +77,13 @@ public class MainTestClass {
                 0,
                 0);
 
-        TradeObject ob4 = new TradeObject(
-                3,
-                200,
-                0.95,
-                1.2,
-                0.01,
-                1234,
-                2,
-                1,
-                0,
-                0);
+
 
         //Sample trade objects
         TradeObject sell = new TradeObject(
                 9,
                 1000000,
-                0.95,
+                1.00,
                 1.02,
                 2.01,
                 1234,
@@ -88,7 +93,7 @@ public class MainTestClass {
                 0);
 
         TradeObject b1 = new TradeObject(
-                2,
+                8,
                 200,
                 1.01,
                 1.2,
@@ -99,7 +104,7 @@ public class MainTestClass {
                 0,
                 0);
         TradeObject b2 = new TradeObject(
-                2,
+                7,
                 200,
                 1.31,
                 1.2,
@@ -110,7 +115,7 @@ public class MainTestClass {
                 0,
                 0);
         TradeObject b3 = new TradeObject(
-                3,
+                6,
                 200,
                 100.01,
                 1.2,
@@ -125,10 +130,11 @@ public class MainTestClass {
 
 
         List<TradeObject> sellOrderBook = new ArrayList<>();
+        sellOrderBook.add(ob4);
         sellOrderBook.add(ob1);
         sellOrderBook.add(ob2);
         sellOrderBook.add(ob3);
-        sellOrderBook.add(ob4);
+
 
         List<TradeObject> buyOrderBook = new ArrayList<>();
         buyOrderBook.add(b1);
