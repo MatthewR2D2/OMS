@@ -1,14 +1,41 @@
-
+/*
+* @Description This is the matching engine which matches a sell side to a buy side order
+* @params to - this is the actual submitted order from a user
+* @params buyBook - This is the buy side order book
+* @params sellBook - This is the sell side order book
+*
+* @returns this returns a string of the results
+* TODO: return needs to change to be more meaninful
+*
+* What is supported:
+* Market Orders Buy + Sell
+* Limit Orders  Buy + Sell
+*
+* TIME In Force
+* Support:
+* Not Supported: GTC (Good Til Cancel), (IOC) Immediate Fill or Cancel, (FOK)Fill or Kill,(GTD) Good for Day
+*
+* */
 
 import TradePackages.TradeObject;
 
 import java.util.List;
 
+/**+
+ * Matching engine
+ */
 public class MatchingEngine {
 
     // Constructor Needs no optiion
     public MatchingEngine(){}
 
+    /**+
+     *This is the main method of the matching engine
+     * @param to  Trade
+     * @param buyBook buy side orderbook
+     * @param sellBook sell side orderbook
+     * @return returns a string of the results
+     */
     public String orderMatch(TradeObject to, List<TradeObject> buyBook, List<TradeObject> sellBook )
     {
         String result = "";
@@ -19,12 +46,24 @@ public class MatchingEngine {
             result = "Canceling order";
             //Send cancel request to the DB
             // and remove exsiting orderr from order book
+            if(to.getSide() == 0) //Buy side
+            {
+                result = cancelOrder(to, buyBook);
+
+            }else
+            {
+                result = cancelOrder(to, sellBook);
+            }
         }else if(to.getOrderType() == 1) //Amend Order
         {
-            result = "Amending Order";
-            //Find order in array
-            //update all variables
-            //Run matching engine with new ordere
+            if(to.getSide() == 0) //Buy Side
+            {
+                result = amendOrder(to, buyBook);
+            }else
+            {
+                result = amendOrder(to, sellBook);
+            }
+
         }else if (to.getOrderType() == 0) //New Order
         {
             //Find side then send to the right matching method
@@ -46,6 +85,11 @@ public class MatchingEngine {
         return result;
     }
 
+    /**+
+     *This is a validator for each order. It must come through this before being worked on
+     * @param to trade
+     * @return returns boolean if it a valid trade or not
+     */
     private Boolean validateOrder(TradeObject to)
     {
         boolean valid = false;
@@ -63,6 +107,12 @@ public class MatchingEngine {
         return valid;
     }
 
+    /**+
+     *This is for matching a sell order for both limit and market orders
+     * @param to Trade
+     * @param buyBook buy side order book
+     * @param sellBook sell side order book
+     */
     private void sellOrderMatching(TradeObject to, List<TradeObject> buyBook, List<TradeObject> sellBook)
     {
         System.out.println("Sell Order");
@@ -72,9 +122,7 @@ public class MatchingEngine {
         {
             //Limit Order
             //Find the closest price to the order
-            int index = findClosestNumber(buyBook, to.getPrice());
-            System.out.println("Best price match: " + index);
-            System.out.println("Order Number: " + buyBook.get(index).getId());
+            int index = findSellPriceLimitOrder(buyBook, to.getPrice());
             // Fill the order for the found order book order
             fillOrder(to, buyBook, sellBook, index);
 
@@ -93,6 +141,12 @@ public class MatchingEngine {
         }
     }
 
+    /**+
+     *This is for matching a buy order for both limit and market orders
+     * @param to  Trade
+     * @param buyBook buyside orderbook
+     * @param sellBook sell side orderbook
+     */
     private void buyOrderMatching(TradeObject to, List<TradeObject> buyBook, List<TradeObject> sellBook)
     {
         System.out.println("Buy Order");
@@ -102,12 +156,10 @@ public class MatchingEngine {
         {
             //Limit Order
             //Find the closest price to the order
-            int index = findClosestNumber(sellBook, to.getPrice());
-            System.out.println("Best price match: " + index);
-            System.out.println("Order Number: " + sellBook.get(index).getId());
+            int index = findBuyPriceLimitOrder(sellBook, to.getPrice());
+            //System.out.println("Order Number: " + sellBook.get(index).getOrderId());
             // Fill the order for the found order book order
             fillOrder(to, sellBook, buyBook, index);
-
         }else
         {
             // Market order
@@ -124,10 +176,29 @@ public class MatchingEngine {
 
     }
 
+    /*
+    * This method will fill all limit orders for both sides
+    * */
+
+    /**+
+     * This if for filling orders and removal of fully filled orders from the order book. It also adds a partially filled
+     * order to the same side book
+     * @param to The trade
+     * @param orderBook the opposite side order book
+     * @param sameSideBook the same side orderbook
+     * @param index the index of the orderbook of the matching order
+     */
     private void fillOrder(TradeObject to, List<TradeObject> orderBook, List<TradeObject> sameSideBook, int index)
     {
-        if(to.getQuantity() > orderBook.get(index).getQuantity())
+        // If no order was found then add it to the order book from here
+        if(index == -1)
         {
+            System.out.println("Order is not filled and will be sent to the order book");
+            sameSideBook.add(to);
+        }
+        else if(to.getQuantity() > orderBook.get(index).getQuantity())
+        {
+            System.out.println("Best price match ID: " + orderBook.get(index).getOrderId() + " Side: " + orderBook.get(index).getSide() + " Price:" + orderBook.get(index).getPrice());
             //Partial Fill set the new quantitiy for the order
             //TODO: Make a fill method to actaully fill the order
             to.setQuantity(to.getQuantity() - orderBook.get(index).getQuantity());
@@ -136,9 +207,20 @@ public class MatchingEngine {
             //Get the next order
             if(to.getQuantity() > 0 && !orderBook.isEmpty())
             {
-                int newIndex = findClosestNumber(orderBook, to.getPrice());
-                System.out.println("Order not fully filled Getting next order");
-                fillOrder(to, orderBook, sameSideBook, newIndex); //Recursive call back to start
+                if (to.getSide() == 0) //Buy side
+                {
+                    int newIndex = findBuyPriceLimitOrder(orderBook, to.getPrice());
+                    System.out.println("Order not fully filled Getting next order");
+                    fillOrder(to, orderBook, sameSideBook, newIndex); //Recursive call back to start
+                }else
+                    {
+                        int newIndex =findSellPriceLimitOrder(orderBook, to.getPrice());
+                        System.out.println("Order not fully filled Getting next order");
+                        fillOrder(to, orderBook, sameSideBook, newIndex); //Recursive call back to start
+
+                    }
+
+
             }else
             {
                 //Add the unfill order to the order book.
@@ -166,6 +248,13 @@ public class MatchingEngine {
     }
 
     // These will fill solong as there is a opposite order
+
+    /**+
+     *This is for filing a market order for the buy side
+     * @param to The trade
+     * @param buyBook buy side orderbook
+     * @param sellBook sell side orderbook
+     */
     private void fillBuyMarketOrder(TradeObject to, List<TradeObject> buyBook, List<TradeObject> sellBook)
     {
         System.out.println("Starting to Fill order");
@@ -204,7 +293,14 @@ public class MatchingEngine {
         }
     }
 
-    // These will fill solong as there is a opposite order
+
+
+    /**+
+     *This is for filling the sell side market orders
+     * @param to The order
+     * @param buyBook The buy side orderbook
+     * @param sellBook the sell side orderbook
+     */
     private void fillSellMarketOrder(TradeObject to, List<TradeObject> buyBook, List<TradeObject> sellBook)
     {
         System.out.println("Starting to Fill order");
@@ -243,56 +339,98 @@ public class MatchingEngine {
         }
     }
 
-    private int findClosestNumber(List<TradeObject> orderBook, double target)
+
+
+
+
+    /**+
+     *
+     * @param to This is the trade object
+     * @param orderBook The order book for the same side as the trade
+     * @return String that is the results of canceling
+     */
+    private String cancelOrder(TradeObject to, List<TradeObject> orderBook)
     {
-        int n = orderBook.size();
-
-        //Corner cases
-        if(target <= orderBook.get(0).getPrice()) return 0;
-        if (target >= orderBook.get(n-1).getPrice()) return n-1;
-
-        int i = 0, j = n, mid = 0;
-        while(i < j)
+        String canResult = "";
+        for(int i = 0; i < orderBook.size(); i++)
         {
-            mid = (i + j) /2;
-            // Check to see if target is the mid value
-            if (orderBook.get(mid).getPrice() == target)
-            { return mid; }
+            if(to.getOrderId() == orderBook.get(i).getOrderId())
+            {
+                canResult = "Order: " + orderBook.get(i).getOrderId() + " is being canceled";
+                // Remove and cancel the order based on ID
+                orderBook.remove(i);
 
-            //Check to see if target is less than mid then serach left
-            if(target < orderBook.get(mid).getPrice())
+            }else
             {
-                // Get the closest of the two values of the target
-                if (mid > 0 && target > orderBook.get(mid - 1).getPrice())
-                {
-                    //Check mid -1 and mid
-                    return getClosest(orderBook,
-                            mid,
-                            target);
-                }
-                // Repeat for 2nd half of the array
-                j = mid;
-            }else // If target is greater than mid
-            {
-                if(mid < n -1 && target < orderBook.get(mid + 1).getPrice())
-                {
-                    return getClosest(orderBook,
-                            mid,
-                            target);
-                }
-                i = mid +1; //update i
+                canResult = "Cannot Find Order please check you order ID and retry";
             }
         }
-        return mid;
+        return canResult;
     }
 
-    private int getClosest(List<TradeObject> orderBook, int mid, double target) {
-
-        if (target - orderBook.get(mid-1).getPrice() >= orderBook.get(mid).getPrice() - target)
+    /**+
+     *
+     * @param to This is the trade object
+     * @param orderBook The order book for the same side as the trade
+     * @return String that is the results of canceling
+     */
+    private String amendOrder(TradeObject to, List<TradeObject> orderBook)
+    {
+        String amendResult = "";
+        for(int i = 0; i < orderBook.size(); i++)
         {
-            return orderBook.indexOf(orderBook.get(mid-1));
-        }else{ return orderBook.indexOf(orderBook.get(mid));}
+            if(to.getOrderId() == orderBook.get(i).getOrderId())
+            {
+                amendResult = "Order: " + orderBook.get(i).getOrderId() + " is being amended";
+                // Amaned to order and cancel the order based on ID
+                orderBook.set(i, to);
 
+            }else
+            {
+                amendResult = "Cannot Find Order please check you order ID and retry";
+            }
+        }
+        return amendResult;
+    }
+
+    /**+
+     * This find the best price that is less than or equal to the buy price
+     * @param sellBook  The sell order book
+     * @param price  The limit price
+     * @return This returns the index of the found order from the order book
+     */
+    private int findBuyPriceLimitOrder(List<TradeObject> sellBook, double price )
+    {
+        int currentBestPriceIndex = -1;
+        for (TradeObject trade: sellBook) {
+            if(price >= trade.getPrice())
+            {
+                //Found the trade that matches then write it to the index
+                currentBestPriceIndex = sellBook.indexOf(trade);
+            }else {break;} // if no match less than or equal to
+        }
+
+        return currentBestPriceIndex;
+    }
+
+    /**+
+     * Find the best price that is greater than or equal to the limit price
+     * @param buyBook Buy side order book
+     * @param price limit price from order
+     * @return returns the index that is the best price closest to the price
+     */
+    private int findSellPriceLimitOrder(List<TradeObject> buyBook, double price )
+    {
+        int currentBestPriceIndex = -1;
+        for (TradeObject trade: buyBook) {
+            if(price <= trade.getPrice())
+            {
+                //Found the trade that matches then write it to the index
+                currentBestPriceIndex = buyBook.indexOf(trade);
+            }else {break;} // if no match less than or equal to
+        }
+
+        return currentBestPriceIndex;
     }
 
 
