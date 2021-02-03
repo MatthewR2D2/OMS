@@ -38,6 +38,7 @@ public class MatchingEngine {
      */
     public String orderMatch(TradeObject to, List<TradeObject> buyBook, List<TradeObject> sellBook )
     {
+		System.out.println("Hello Class");
         String result = "";
         //Check what type of order it is
         // [0 : New, 1: Amend, 2 :Cancel]
